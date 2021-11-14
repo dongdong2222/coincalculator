@@ -20,12 +20,17 @@ class Money {
     }
 
 }
-class TotalPurchase extends Money{
+class InitialPurchase extends Money{
     constructor(n){
         super(n);
     }
 }
-class TotalAveragePrice extends Money{
+class InitialRevenue extends Money{
+    constructor(n){
+        super(n);
+    }
+}
+class InitialAveragePrice extends Money{
     constructor(n){
         super(n);
     }
@@ -33,44 +38,112 @@ class TotalAveragePrice extends Money{
 
 
 class PurchaseUnit { //implement Observer
-    constructor(unitTable, num) {
+    constructor(unitTable) {
         this.unitTable = unitTable;
-        this.num = num;
+        //this.num = num;
+        this.create();
     }
 
     purchasePrice;
     priceOfCoin;
+    numofCoin;
     averagePrice;
-    current
+    currentPurchase;
+    currentAveragePrice;
+
     setPurchasePrice(n){
         this.purchasePrice = n;
     }
     setPriceOfCoin(n){
         this.priceOfCoin = n;
+        this.numOfCoin = this.purchasePrice/n;
+        this.purchasePrice = numOfCoin*n;
+    }
+    update (currentPurchase, currentAveragePrice) {
+        this.currentPurchase = currentPurchase;
+        this.currentPriceOfCoin = currentAveragePrice;
+
+    }
+    notifyObserver() {
+        this.unitTable.update(this.currentPurchase, this.currentAveragePrice);
     }
     calculateAveragePrice(){
-        this.
+
+        var totalNumOfCoin = (this.currentPurchase/currentAveragePrice) + this.numOfCoin;
+        this.currentPurchase += this.purchasePrice;
+        this.currentAveragePrice += this.currentPurchase/ totalNumOfCoin;
+        this.notifyObserver();
+        this.averagePrice = this.currentAveragePrice;
+    }
+    create(){
+        var parent = document.getElementById("table");
+        var unit = document.createElement("div");
+        var input;
+        var lable;
+        unit.setAttribute("class", "unit");
+
+        lable = document.createElement("lable");
+        input = document.createElement("input");
+        lable.setAttribute("for", "purchase");
+        lable.innerText = "매수금";
+        input.setAttribute("name", "purchase");
+        unit.appendChild(lable);
+        unit.appendChild(input);
+        unit.addEventListener("input",this.inputHandler);
+
+
+        lable = document.createElement("lable");
+        input = document.createElement("input");
+        lable.setAttribute("for", "priceOfCoin");
+        lable.innerText = "코인가격";
+        input.setAttribute("name", "priceOfCoin");
+        unit.appendChild(lable);
+        unit.appendChild(input);
+
+        lable = document.createElement("lable");
+        input = document.createElement("p");
+        lable.setAttribute("for", "average");
+        lable.innerText = "평단가";
+        input.setAttribute("name", "average");
+        unit.appendChild(lable);
+        unit.appendChild(input);
+        parent.appendChild(unit);
+    }
+    inputHandler(){
+        console.log("ww");
     }
 
     
 }
 class PurchaseTable {//implement Subject
     constructor() {
-        this.totalPurchase = new TotalPurchase(0);
-        this.totalAveragePrice = new TotalAveragePrice(0);
+        this.initialPurchase = new InitialPurchase(0);
+        this.initialAveragePrice = new InitialAveragePrice(0);
+        this.initialRevenue = new InitialRevenue(0);
         
     }
-
+    //총매수금 총수익 현재 평단가
     purchaseUnits = [];
     currentPurchase;
     currentAveragePrice;
 
+    createUnit(){
+        var unit = new PurchaseUnit(this);
+        this.purchaseUnits.push(unit);
+    }
 
     setCurrentPurchase (n) {
         this.currentPurchase = n;
     }
-    setCurrentAvervagePrice (n) {
+    setCurrentAveragePrice (n) {
         this.currentAveragePrice = n;
+    }
+    setInitialValue(a, b, c){
+        this.initialPurchase.setPrice(a);
+        this.initialRevenue.setPrice(b);
+        this.initialAveragePrice.setPrice(c);
+        this.currentPurchase = this.initialPurchase.getPrice();
+        this.currentAveragePrice = this.initialAveragePrice.getPrice();
     }
     registerObserver (ob){
         this.purchaseUnits.push(ob);
@@ -83,9 +156,29 @@ class PurchaseTable {//implement Subject
     }
     notifyObserver(){
         for(var i=0;i<this.purchaseUnits.length;i++){
-            this.purchaseUnits[i].update(this.currentPurchase,this.currentRevenue);
+            this.purchaseUnits[i].update(this.currentPurchase, this.currentAveragePrice);
         }
+    }
+    update (currentPurchase, currentAveragePrice) {
+        this.currentPurchase = currentPurchase;
+        this.currentAveragePrice = currentAveragePrice;
     }
     
 
 }
+
+
+class Invock {
+    slot = [];
+    setCommand(c){
+        this.slot.push(c);
+    }
+    pressed(){
+        for(var i=0;i<this.slot.length; i++){
+            this.slot[i].excute();
+        }
+    }
+
+}
+var set =new PurchaseTable();
+set.createUnit();

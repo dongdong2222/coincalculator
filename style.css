@@ -1,0 +1,20 @@
+#input-info {
+    display: flex;
+
+}
+.unit {
+    display : flex;
+    flex-direction: column;
+}
+
+lable {
+    display: block;
+
+}
+input {
+    display: block;
+}
+
+#table {
+    display: flex;
+}
