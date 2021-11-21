@@ -3,6 +3,7 @@ class UnitTable {
         this.units.push(new InitialUnit(this));
     }
     units = [];
+    count = 0;
 
     Price = {"currentPurchasePrice": 0,
             "currentAverageCoinPrice": 0,
@@ -22,6 +23,11 @@ class UnitTable {
         for(var i=0;i<this.units.length;i++){
             this.Price = this.units[i].updateAverageCoinPrice(this.Price);
         }
+    }
+    createUnit() {
+        console.log(this.count);
+        this.count++;
+        this.units.push(new PurchaseUnit(this, this.count));
     }
 }
 class TotalRegulator {
@@ -88,13 +94,14 @@ class PurchaseUnit extends Unit {
         super();
         this.unitTable = table;
         this.number = number;
+        this.create();
     }
 
     purchasePrice;
     coinPrice = 1;
     numOfCoin;
 
-    setPurchsePrice(n) {
+    setPurchasePrice(n) {
         this.purchasePrice = n;
         this.numOfCoin = Math.floor(this.purchasePrice/this.coinPrice);
         this.unitTable.notifyUnit();
@@ -109,7 +116,10 @@ class PurchaseUnit extends Unit {
         var coin = Price.numOfCoin + this.numOfCoin;
         var totalAverageCoinPrice = totalPurchase/coin;
         //평단가 화면 업데이트
-
+        console.log("update:");
+        console.log(totalPurchase);
+        var p = document.getElementById("average-coin-price-"+this.number);
+        p.innerText = ""+totalAverageCoinPrice;
         return { "currentPurchasePrice": totalPurchase,
                  "currentAverageCoinPrice": totalAverageCoinPrice,
                  "numOfCoin" : coin};
@@ -121,6 +131,7 @@ class PurchaseUnit extends Unit {
     }
 
     create(){
+        console.log("create:"+this.number);
         var parent = document.getElementById("table");
         var addUnit = document.getElementById("add-unit-unit");
         var unit = document.createElement("div");
@@ -132,19 +143,22 @@ class PurchaseUnit extends Unit {
         input = document.createElement("input");
         lable.setAttribute("for", "purchase");
         lable.innerText = "매수금";
+        input.setAttribute("type", "number");
         input.setAttribute("name", "purchase");
-        input.setAttribute("id", "purchase-price-${this.number}");
+        input.setAttribute("id", "purchase-price-"+this.number);
         unit.appendChild(lable);
         unit.appendChild(input);
-        unit.onchange = this.inputHandler;
+        unit.addEventListener("change", this.inputHandler.bind(this));
 
 
         lable = document.createElement("lable");
         input = document.createElement("input");
         lable.setAttribute("for", "priceOfCoin");
         lable.innerText = "코인가격";
+        input.setAttribute("type", "number");
         input.setAttribute("name", "priceOfCoin");
-        input.setAttribute("id", "price-of-coin-${this.number}");
+
+        input.setAttribute("id", "price-of-coin-"+this.number);
         unit.appendChild(lable);
         unit.appendChild(input);
 
@@ -153,6 +167,8 @@ class PurchaseUnit extends Unit {
         lable.setAttribute("for", "average");
         lable.innerText = "평단가";
         input.setAttribute("name", "average");
+        input.innerText = 0;
+        input.setAttribute("id", "average-coin-price-"+this.number);
         unit.appendChild(lable);
         unit.appendChild(input);
         parent.insertBefore(unit, addUnit);
@@ -160,10 +176,19 @@ class PurchaseUnit extends Unit {
         var button = document.createElement("button");
         button.setAttribute("type", "button");
         button.innerText = "-";
-        button.onclick = ()=>{  this.unitTable.deleteObserver(this); //손보기
+        button.onclick = ()=>{  this.unitTable.deleteUnit(this); //손보기
                                 unit.remove();
         };
         unit.appendChild(button);
+    }
+    inputHandler(){
+        var element1 = document.getElementById("purchase-price-"+this.number);
+        console.log(this.id);
+        console.log(this);
+        var element2 = document.getElementById("price-of-coin-"+this.number);
+        console.log(typeof Number(element1.value));
+        this.setPurchasePrice(Number(element1.value*1));
+        this.setCoinPrice(Number(element2.value*1));
     }
     
 }
